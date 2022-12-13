@@ -152,35 +152,6 @@ export function drawLocationsVisited(locations: Location[]): string {
   return diagram;
 }
 
-// export function drawState(knotLocations: RopeModel, index: number): string {
-//   let minColumn = 0;
-//   let maxColumn = 0;
-//   let minRow = 0;
-//   let maxRow = 0;
-
-//   for (const location of ropeModel.headLocations) {
-//     minColumn = Math.min(minColumn, location.column);
-//     maxColumn = Math.max(maxColumn, location.column);
-//     minRow = Math.min(minRow, location.row);
-//     maxRow = Math.max(maxRow, location.row);
-//   }
-
-//   const textDiagram = new Array<string[]>(maxRow - minRow + 1);
-//   for (let index = 0; index < textDiagram.length; index++) {
-//     textDiagram[index] = new Array<string>(maxColumn - minColumn + 1).fill(".");
-//   }
-
-//   textDiagram[0 - minRow][0 - minColumn] = "s";
-//   const headLocation = ropeModel.headLocations[index];
-//   const tailLocation = ropeModel.tailLocations[index];
-//   textDiagram[headLocation.row - minRow][headLocation.column - minColumn] = "H";
-//   textDiagram[tailLocation.row - minRow][tailLocation.column - minColumn] = "T";
-
-//   const diagramRows = textDiagram.map((columns) => columns.join("")).reverse();
-//   const diagram = diagramRows.join("\n");
-//   return diagram;
-// }
-
 export function drawState(
   knotLocations: Location[][],
   positionIndex: number

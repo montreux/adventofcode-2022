@@ -44,7 +44,7 @@ export function parseCratesTextIntoMoves(cratesTextArt: string[]): CrateMove[] {
     }
     const match = line.match(moveRegex);
     if (match == null) {
-      throw new Error();
+      throw new Error("Move regex failed to match");
     }
     crateMoves.push({
       numberOfCratesToMove: Number.parseInt(match[1]),

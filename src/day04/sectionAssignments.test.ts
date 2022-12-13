@@ -37,11 +37,7 @@ test("findFullyOverlappingAssignments - part 1", () => {
   );
   const fullyOverlappingAssignments =
     findFullyOverlappingAssignments(assignments);
-  expect(fullyOverlappingAssignments).not.toHaveLength(0);
-
-  console.log(
-    `${fullyOverlappingAssignments.length} fully overlapping assignments`
-  );
+  expect(fullyOverlappingAssignments).toHaveLength(584);
 });
 
 test("findPartiallyOverlappingAssignments", () => {
@@ -63,9 +59,5 @@ test("findPartiallyOverlappingAssignments - part 2", () => {
   );
   const partiallyOverlappingAssignments =
     findPartiallyOverlappingAssignments(assignments);
-  expect(partiallyOverlappingAssignments).not.toHaveLength(0);
-
-  console.log(
-    `${partiallyOverlappingAssignments.length} partially overlapping assignments`
-  );
+  expect(partiallyOverlappingAssignments).toHaveLength(933);
 });

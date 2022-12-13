@@ -57,9 +57,7 @@ test("part one", () => {
   for (const directoryDetail of matchDirectorySizes) {
     sumOfMatchingSizes += directoryDetail.size;
   }
-  expect(sumOfMatchingSizes).not.toBe(0);
-
-  console.log(`Part 1 sum: ${sumOfMatchingSizes}`);
+  expect(sumOfMatchingSizes).toBe(1334506);
 });
 
 test("part two - example data", () => {
@@ -136,7 +134,6 @@ Directories e and a are both too small; deleting them would not free up enough s
 
   expect(matchDirectorySizes).not.toHaveLength(0);
 
-  console.log(
-    `Smallest directory to delete is ${matchDirectorySizes[0].directory.name} freeing ${matchDirectorySizes[0].size}`
-  );
+  expect(matchDirectorySizes[0].directory.name).toBe("ptzptl");
+  expect(matchDirectorySizes[0].size).toBe(7421137);
 });

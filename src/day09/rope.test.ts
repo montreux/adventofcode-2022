@@ -16,8 +16,11 @@ test("locations visited - example data", () => {
   );
   expect(tailLocationsVisited).toBe(13);
 
-  console.log(drawLocationsVisited(ropeModel.knotLocations[1]));
-  console.log(ropeModel.stateDiagram);
+  const locationsVisitedDiagram = drawLocationsVisited(
+    ropeModel.knotLocations[1]
+  );
+  // console.log(locationsVisitedDiagram);
+  // console.log(ropeModel.stateDiagram);
 });
 
 test("locations visited - part one data", () => {
@@ -30,7 +33,7 @@ test("locations visited - part one data", () => {
   expect(tailLocationsVisited).toBe(6498);
 
   //   console.log(drawLocationsVisited(ropeModel.tailLocations));
-  console.log(`Rope tail visited ${tailLocationsVisited} unique locations`);
+  // console.log(`Rope tail visited ${tailLocationsVisited} unique locations`);
 });
 
 test("locations visited - part two", () => {
@@ -40,10 +43,5 @@ test("locations visited - part two", () => {
   const tailLocationsVisited = getUniqueLocationsVisited(
     ropeModel.knotLocations[9]
   );
-  expect(tailLocationsVisited).not.toBe(0);
-
-  //   console.log(drawLocationsVisited(ropeModel.tailLocations));
-  console.log(
-    `10th rope tail visited ${tailLocationsVisited} unique locations`
-  );
+  expect(tailLocationsVisited).toBe(2531);
 });

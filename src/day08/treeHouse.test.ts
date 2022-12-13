@@ -20,9 +20,7 @@ test("count visible trees - part one", () => {
   const testData = loadDataFrom("./src/day08/treeHouse.data.txt");
   const treeModel = buildTreeModel(testData);
   const numberOfVisibleTrees = countVisibleTrees(treeModel);
-  expect(numberOfVisibleTrees).not.toBe(0);
-
-  console.log(`${numberOfVisibleTrees} visible trees`);
+  expect(numberOfVisibleTrees).toBe(1854);
 });
 
 test("viewing distance - example data", () => {
@@ -52,7 +50,5 @@ test("scenic score - part2", () => {
   const forest = buildTreeModel(testData);
   const bestTree = findMaxScenicScore(forest);
 
-  expect(bestTree.scenicScore).not.toBe(0);
-
-  console.log(`Tree with highest scenic score: ${JSON.stringify(bestTree)}`);
+  expect(bestTree.scenicScore).toBe(527340);
 });

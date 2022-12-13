@@ -2,13 +2,10 @@ import { assert } from "console";
 import * as fs from "fs";
 
 // read data file into data structure
-export function loadDataFrom(filePath: string): number[][] {
-  const dataBuffer = fs.readFileSync(filePath, "utf-8");
-  const dataLines = dataBuffer.split("\n");
-
+export function parseInputData(inputData: string[]): number[][] {
   const allElvesInventories: number[][] = [];
   let currentElfInventory: number[] = [];
-  dataLines.forEach((value: string) => {
+  inputData.forEach((value: string) => {
     // blank line is separator
     // write current elf inventory to full set and reset
     const isNewElf = value.length === 0;

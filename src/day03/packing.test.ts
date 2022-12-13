@@ -32,7 +32,7 @@ test("calculatePriorityOfItems - Part 1", () => {
   const sumOfPriorities = calculatePriorityOfItems(mispackedItems.join(""));
   expect(sumOfPriorities).not.toBe(0);
 
-  console.log(`Sum of priorities of mispacked items: ${sumOfPriorities}`);
+  // console.log(`Sum of priorities of mispacked items: ${sumOfPriorities}`);
 });
 
 test("Priority value of team badges", () => {
@@ -44,7 +44,5 @@ test("Priority value of team badges", () => {
 test("Priority value of team badges - part 2", () => {
   const testData = loadDataFrom("./src/day03/packing.data.txt");
   const sumOfPriorities = calculatePriorityOfBadgeItems(testData);
-  expect(sumOfPriorities).not.toBe(0);
-
-  console.log(`Sum of priorities of badge items: ${sumOfPriorities}`);
+  expect(sumOfPriorities).toBe(2790);
 });

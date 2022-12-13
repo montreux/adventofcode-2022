@@ -33,10 +33,6 @@ test("Parsing example data", () => {
 ..v>>>^^
 ..>>>>>^`;
   expect(routeMapPicture).toBe(expectedRouteMapPicture);
-  //   const shortestRoute: [number, number][] = findShortestRoute(terrainMap);
-  //   const lengthOfShortestRoute = shortestRoute.length;
-
-  //   expect(lengthOfShortestRoute).toBe(31);
 });
 
 test("Test shortest route algorithm - example data", () => {

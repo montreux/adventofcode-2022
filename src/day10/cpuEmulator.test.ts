@@ -51,9 +51,7 @@ test("Part 1 - signal strengths", () => {
   const sumOfSignalStrengths = actualSignalStrengths.reduce(
     (previousValue, currentValue) => previousValue + currentValue
   );
-  expect(sumOfSignalStrengths).not.toBe(0);
-
-  console.log(`Sum of 6 signal strengths: ${sumOfSignalStrengths}`);
+  expect(sumOfSignalStrengths).toBe(12880);
 });
 
 test("Part 2 - Render example data", () => {
@@ -77,7 +75,14 @@ test("Part 2 - Render puzzle data", () => {
   const xValuesPerCycle: number[] = buildXValues(testData);
 
   const actualRender = renderXValues(xValuesPerCycle, "█");
+  const expectedRender = `
+████..██....██..██..███....██.███..████.
+█....█..█....█.█..█.█..█....█.█..█.█....
+███..█.......█.█..█.█..█....█.█..█.███..
+█....█.......█.████.███.....█.███..█....
+█....█..█.█..█.█..█.█....█..█.█.█..█....
+█.....██...██..█..█.█.....██..█..█.████.`;
 
-  expect(actualRender).not.toBe("");
-  console.log(actualRender);
+  expect(actualRender).toBe(expectedRender.trim());
+  // console.log(actualRender);
 });

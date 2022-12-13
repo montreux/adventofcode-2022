@@ -125,7 +125,7 @@ test("Perform rounds - real data - part one", () => {
   expect(monkeyBusiness).not.toBe(18620); // Known wrong
   expect(monkeyBusiness).toBe(55944);
 
-  console.log(`Monkey business: ${monkeyBusiness}`);
+  // console.log(`Monkey business: ${monkeyBusiness}`);
 });
 
 test("Perform rounds - example data - part two", () => {
@@ -200,7 +200,7 @@ test("Perform rounds - example data - part two", () => {
   const monkeyBusiness = calcMoneyBusiness(allMonkeys);
   expect(monkeyBusiness).toBe(2713310158);
 
-  console.log(`Monkey business: ${monkeyBusiness}`);
+  // console.log(`Monkey business: ${monkeyBusiness}`);
 });
 
 test("Perform rounds - real data - part two", () => {
@@ -217,5 +217,5 @@ test("Perform rounds - real data - part two", () => {
   expect(monkeyBusiness).not.toBe(18620); // Known wrong
   expect(monkeyBusiness).toBe(15117269860);
 
-  console.log(`Monkey business: ${monkeyBusiness}`);
+  // console.log(`Monkey business: ${monkeyBusiness}`);
 });

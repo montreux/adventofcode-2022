@@ -49,9 +49,7 @@ test("topCrates - part 1", () => {
   const moves = parseCratesTextIntoMoves(testData);
   const resultOfMoves = performMoves(cratesAsStacks, moves);
   const topCrateValues = topCrates(resultOfMoves);
-  expect(topCrateValues).not.toBe("");
-
-  console.log(`Top crates after move: ${topCrateValues}`);
+  expect(topCrateValues).toBe("SVFDLGLWV");
 });
 
 test("topCrates - 9001", () => {
@@ -69,7 +67,5 @@ test("topCrates - 9001 - part 2", () => {
   const moves = parseCratesTextIntoMoves(testData);
   const resultOfMoves = performMovesWithCrateMover9001(cratesAsStacks, moves);
   const topCrateValues = topCrates(resultOfMoves);
-  expect(topCrateValues).not.toBe("");
-
-  console.log(`Top crates after 9001 move: ${topCrateValues}`);
+  expect(topCrateValues).toBe("DCVTCVPCL");
 });

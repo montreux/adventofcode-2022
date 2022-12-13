@@ -1,5 +1,4 @@
 import { assert } from "console";
-import * as fs from "fs";
 
 const MoveValues = new Map<string, number>([
   ["A", 1],
@@ -32,11 +31,8 @@ interface RockPaperScissorRound {
 }
 
 // read data file into data structure
-export function loadDataFrom(filePath: string): RockPaperScissorRound[] {
-  const dataBuffer = fs.readFileSync(filePath, "utf-8");
-  const dataLines = dataBuffer.split("\n");
-
-  const rounds = dataLines.map(
+export function parseRoundsData(inputData: string[]): RockPaperScissorRound[] {
+  const rounds = inputData.map(
     (encryptedMove: string): RockPaperScissorRound => {
       const moves = encryptedMove.split(" ");
       return {
