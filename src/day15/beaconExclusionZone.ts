@@ -38,6 +38,37 @@ export function parseInputData(inputData: string[]): SensorInfo[] {
   return allSensorInfo;
 }
 
+export function rotateModel45(sensors: SensorInfo[]): SensorInfo[] {
+  const beaconZone = findBeaconZone(sensors);
+  const center: Point = {
+    x: (beaconZone.topLeft.x + beaconZone.bottomRight.x) / 2,
+    y: (beaconZone.topLeft.y + beaconZone.bottomRight.y) / 2,
+  };
+
+  const newModel = sensors.map((sensor) => {
+    const newLocation = rotate45(sensor.location, center);
+    const newBeaconLocation = rotate45(sensor.nearestBeacon, center);
+    return {
+      location: newLocation,
+      nearestBeacon: newBeaconLocation,
+      nearestBeaconDistance: sensor.nearestBeaconDistance,
+    } as SensorInfo;
+  });
+  return newModel;
+}
+
+function rotate45(point: Point, center: Point): Point {
+  const newX =
+    Math.SQRT1_2 * (point.x - center.x) -
+    Math.SQRT1_2 * (point.y - center.y) +
+    center.x;
+  const newY =
+    Math.SQRT1_2 * (point.x - center.x) +
+    Math.SQRT1_2 * (point.y - center.y) +
+    center.y;
+  return { x: newX, y: newY };
+}
+
 export function canBeaconExistAt(
   possibleBeaconLocation: Point,
   forSensor: SensorInfo
@@ -59,7 +90,7 @@ export function canBeaconExistAt(
 /**
  * The Manhattan distance as the sum of absolute differences between two points.
  */
-function calcManhattanDistance(a: Point, b: Point): number {
+export function calcManhattanDistance(a: Point, b: Point): number {
   const manhattanDistance = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
   return manhattanDistance;
 }
