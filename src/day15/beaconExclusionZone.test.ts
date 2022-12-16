@@ -77,26 +77,26 @@ test("Find only possible beacon location - example data", () => {
   expect(beaconLocation!.y).toBe(expectedBeaconLocationY);
 });
 
-// test("Find only possible beacon location - real data", () => {
-//   const inputData = loadDataFrom("./src/day15/beaconExclusionZone.data.txt");
-//   const sensorsInfo = parseInputData(inputData);
+xtest("Find only possible beacon location - real data", () => {
+  const inputData = loadDataFrom("./src/day15/beaconExclusionZone.data.txt");
+  const sensorsInfo = parseInputData(inputData);
 
-//   // Your handheld device indicates that the distress signal is coming from a
-//   // beacon nearby. The distress beacon is not detected by any sensor, but the
-//   // distress beacon must have x and y coordinates each no lower than 0 and no
-//   // larger than 4000000.
-//   const beaconLocation = findPossibleBeaconLocation(sensorsInfo, 0, 4000000);
+  // Your handheld device indicates that the distress signal is coming from a
+  // beacon nearby. The distress beacon is not detected by any sensor, but the
+  // distress beacon must have x and y coordinates each no lower than 0 and no
+  // larger than 4000000.
+  const beaconLocation = findPossibleBeaconLocation(sensorsInfo, 0, 4000000);
 
-//   expect(beaconLocation).not.toBeUndefined();
-//   expect(beaconLocation!.x).toBe(2889465);
-//   expect(beaconLocation!.y).toBe(3040754);
+  expect(beaconLocation).not.toBeUndefined();
+  expect(beaconLocation!.x).toBe(2889465);
+  expect(beaconLocation!.y).toBe(3040754);
 
-//   // To isolate the distress beacon's signal, you need to determine its tuning
-//   // frequency, which can be found by multiplying its x coordinate by 4000000
-//   // and then adding its y coordinate.
-//   const tuningFrequency = beaconLocation!.x * 4000000 + beaconLocation!.y;
-//   expect(tuningFrequency).toBe(11557863040754);
-// });
+  // To isolate the distress beacon's signal, you need to determine its tuning
+  // frequency, which can be found by multiplying its x coordinate by 4000000
+  // and then adding its y coordinate.
+  const tuningFrequency = beaconLocation!.x * 4000000 + beaconLocation!.y;
+  expect(tuningFrequency).toBe(11557863040754);
+});
 
 // test("rotate model 45°", () => {
 //   const inputData = loadDataFrom("./src/day15/beaconExclusionZone.data.txt");
