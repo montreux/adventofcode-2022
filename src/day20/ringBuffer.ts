@@ -1,3 +1,9 @@
+/**
+ * Adapted from https://github.com/domske/ring-buffer-ts
+ *
+ * Added 'shiftItem' method.
+ */
+
 export class RingBuffer<T> {
   /**
    * Create a new ring buffer from an array.
