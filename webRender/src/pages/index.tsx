@@ -2,6 +2,7 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import Day18BoilingBoulders from "./Day18BoilingBoulders";
+import { UnstableDiffusion } from "./Day23UnstableDiffusion";
 
 const Home: NextPage = () => {
   return (
@@ -14,7 +15,8 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Day18BoilingBoulders />
+      {/* <Day18BoilingBoulders /> */}
+      <UnstableDiffusion />
     </>
   );
 };
