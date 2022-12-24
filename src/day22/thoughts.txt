@@ -1,0 +1,50 @@
+
+Cubes have 6 sides. The AoC flat map has them arranged
+
+* [..A.]
+* [D/1,2,B/3,.]
+* [..,C, 4]
+
+That didn't really take my anywhere. I've tried marking up a box as follows:
+* __A_
+* BCD_
+* __FE
+
+Per the AoC model, for each face, top, left, right and bottom go to:
+
+* A: B (180), C(90) E (180), D
+* B: A (180), E (-90), C, F (180)
+* C: A (-90), B, D, F (90)
+* D: A, C, E (-90), F
+* E: D (90), F, A (180), B (90)
+* F: D, C (-90), E, B(180)
+
+I could track my orientation, and have prepped each face T, B, L, R based on the orientation. But it is a ring. 
+
+Adjoining faces by orientation (above, right, under, left):
+
+* A: B (180), E (180), D, C(90)
+* B: A(180), C, F180, E-90
+* C: A-90, D, F90, B
+* D: A, E-90, F, C
+* E: D90, A180, B90, F
+* F: D, E, B180, C-90
+
+If I change my orientation by 90 the change to the adjacent faces is -90.
+
+I've just grabbed the puzzle data and faces are arrange differently. I could try and code this to find the cube, adjoining faces and angles. Or maybe do it by inspection and write it down as extra input.
+
+As code, if every face :
+
+* If my first face is the top, then left is -90, right 90
+
+If I parse faces, then I need to know which face to go to, and how to orient it based on by current orientation.
+
+* Where they adjoin in the source data there is no orientation change to make
+* If nothing to the left, and is two down and one to the left, then 180
+	* Same for nothing to the right
+* If nothing one face away, but is one up/down, and one left/right
+	* LD: -90
+	* LR: 90
+	* UL: -90
+	* UR: 90
