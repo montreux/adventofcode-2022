@@ -15,8 +15,8 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {/* <Day18BoilingBoulders /> */}
-      <UnstableDiffusion />
+      <Day18BoilingBoulders />
+      {/* <UnstableDiffusion /> */}
     </>
   );
 };
