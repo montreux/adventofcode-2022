@@ -63,18 +63,18 @@ test("shortest route - puzzle data", () => {
     {
       x: blizzardMap.width,
       y: blizzardMap.height + 1,
-    },
-    (currentBlizzardMap, time, possibleLocations) => {
-      if (time % 10 == 0 || time == 294 || time == 295) {
-        const map = visualizeRouteFinding(
-          currentBlizzardMap,
-          time,
-          possibleLocations
-        );
-        console.log(map);
-        console.log("\n");
-      }
     }
+    // (currentBlizzardMap, time, possibleLocations) => {
+    //   if (time % 10 == 0 || time == 294 || time == 295) {
+    //     const map = visualizeRouteFinding(
+    //       currentBlizzardMap,
+    //       time,
+    //       possibleLocations
+    //     );
+    //     console.log(map);
+    //     console.log("\n");
+    //   }
+    // }
   );
   expect(routeLength).toBe(295);
 });
@@ -124,7 +124,7 @@ test("shortest route while going back for lost snacks - example data", () => {
   expect(totalRouteLength).toBe(54);
 });
 
-test("shortest route while going back for lost snacks - puzzle data", () => {
+xtest("shortest route while going back for lost snacks - puzzle data", () => {
   const inputData = loadDataFrom("./src/day24/blizzardBasin.puzzledata.txt");
   const blizzardMap = parseInputData(inputData);
   let latestBlizzardMap = blizzardMap;
