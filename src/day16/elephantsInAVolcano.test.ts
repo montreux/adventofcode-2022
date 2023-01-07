@@ -9,9 +9,9 @@ import {
   findAllScoringRoutes,
   findBestRoute,
   generateActionsToOpenValve,
-  parseInputData,
   plotRoute,
 } from "./elephantsInAVolcano";
+import { parseInputData } from "./Valve";
 import { loadDataFrom } from "../textFileReader";
 
 test("Parse example data", () => {

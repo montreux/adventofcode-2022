@@ -1,4 +1,5 @@
-import { plotRoute, Valve } from "./elephantsInAVolcano";
+import { plotRoute } from "./elephantsInAVolcano";
+import { Valve } from "./Valve";
 
 /**
  * Which Valve provides the most value if opened
