@@ -1,5 +1,8 @@
 import { loadDataFrom } from "../textFileReader";
-import { findHighestScoringRoute } from "./take2";
+import {
+  findHighestScoringRoute,
+  findHighestScoringRouteWithElephant,
+} from "./take2";
 import { parseInputData } from "./Valve";
 import { valvesToNodes } from "./ValvesToNodesAndEdges";
 
@@ -21,4 +24,15 @@ test("findHighestScoringRoute - example data", () => {
   const bestScore = findHighestScoringRoute(allValvesAsNodes);
 
   expect(bestScore).toBe(1651);
+});
+
+test("findHighestScoringRouteWithElephant - example data", () => {
+  const inputData = loadDataFrom(
+    "./src/day16/elephantsInAVolcano.exampledata.txt"
+  );
+  const allValves = parseInputData(inputData);
+  const allValvesAsNodes = valvesToNodes(allValves);
+  const bestScore = findHighestScoringRouteWithElephant(allValvesAsNodes);
+
+  expect(bestScore).toBe(1707);
 });
