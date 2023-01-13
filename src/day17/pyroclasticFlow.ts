@@ -248,9 +248,9 @@ export function findRepeatingSequence(
     }
   );
 
-  console.log(
-    `Pattern of length 100 found at ${repeatingSequencesByFrequency[0]}`
-  );
+  // console.log(
+  //   `Pattern of length 100 found at ${repeatingSequencesByFrequency[0]}`
+  // );
 }
 
 export function findHeightAfterNDrops(

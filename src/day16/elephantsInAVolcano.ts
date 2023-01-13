@@ -69,12 +69,12 @@ export function findHighestScoringRouteWithElephant(
 ) {
   const timeRemaining = 26;
   const startValve = allValves.get("AA")!;
+  const maxFlowRate = [...allValves.values()]
+    .map((valve) => valve.flowRate)
+    .reduce((a, b) => a + b);
   let bestScore = 0;
-  // let bestStory = new Map<number, string[]>();
 
   dfs(timeRemaining, startValve, 0, startValve, 0, 0, 0, []);
-
-  // printStory(bestStory, timeRemaining, bestScore);
 
   return bestScore;
 
@@ -87,8 +87,6 @@ export function findHighestScoringRouteWithElephant(
     currentPressureRelieved: number,
     pressureReliefFlowRate: number,
     openValves: ValveAsNode[]
-    // storyLog: Map<number, string[]>,
-    // openOrder: string[]
   ) {
     const isAgentOneAtDestination = agentOneTimeToValve == 0;
     const isAgentTwoAtDestination = agentTwoTimeToValve == 0;
@@ -101,53 +99,17 @@ export function findHighestScoringRouteWithElephant(
         ? agentTwoDestinationValve.flowRate
         : 0;
 
-      // if (isAgentOneAtDestination) {
-      //   openOrder.push(agentOneDestinationValve.id);
-      // }
-      // if (isAgentTwoAtDestination) {
-      //   openOrder.push(agentTwoDestinationValve.id);
-      // }
+      const bestPossibleScore =
+        currentPressureRelieved +
+        newPressureReliefFlowRate +
+        (timeRemaining - 1) * maxFlowRate;
+      if (bestPossibleScore <= bestScore) {
+        return;
+      }
 
-      //Log
-      // const currentMinute = 26 - timeRemaining + 1;
-      // const logForMinute = [...(storyLog.get(currentMinute) ?? [])];
-      // if (openValves.length == 0) {
-      //   logForMinute.push("No valves are open.");
-      // } else {
-      //   if (isAgentOneAtDestination) {
-      //     logForMinute.push(
-      //       `Agent 1 has opened ${agentOneDestinationValve.id}`
-      //     );
-      //   }
-      //   if (isAgentTwoAtDestination) {
-      //     logForMinute.push(
-      //       `Agent 2 has opened ${agentTwoDestinationValve.id}`
-      //     );
-      //   }
-      //   logForMinute.push(
-      //     `Valves ${openValves
-      //       .filter(
-      //         (valve) =>
-      //           !(
-      //             valve == agentOneDestinationValve && agentOneTimeToValve > 0
-      //           ) &&
-      //           !(valve == agentTwoDestinationValve && agentTwoTimeToValve > 0)
-      //       )
-      //       .map((valve) => valve.id)
-      //       .sort()
-      //       .join(
-      //         ", "
-      //       )} are open, releasing ${newPressureReliefFlowRate} pressure.`
-      //   );
-      //   logForMinute.push(
-      //     `${currentPressureRelieved} pressure currently relieved`
-      //   );
-      // }
-      // storyLog.set(currentMinute, logForMinute);
-
-      const valvesThatCouldBeOpened = [...allValves.values()].filter(
-        (valve) => !openValves.includes(valve) && valve.flowRate > 0
-      );
+      const valvesThatCouldBeOpened = [...allValves.values()]
+        .filter((valve) => !openValves.includes(valve) && valve.flowRate > 0)
+        .sort((a, b) => b.flowRate - a.flowRate);
 
       if (valvesThatCouldBeOpened.length > 0) {
         const possibleNextAgentOneValves = isAgentOneAtDestination
@@ -162,13 +124,6 @@ export function findHighestScoringRouteWithElephant(
             if (nextAgentTwoValve == nextAgentOneValve) {
               continue;
             }
-            // const isAtJjDdDecisionPoint =
-            //   currentMinute == 1 &&
-            //   nextAgentOneValve.id == "JJ" &&
-            //   nextAgentTwoValve.id == "DD";
-            // if (isAtJjDdDecisionPoint) {
-            //   debugger;
-            // }
             let newAgentOneTimeToValve = isAgentOneAtDestination
               ? agentOneDestinationValve.shortestPaths.get(
                   nextAgentOneValve.id
@@ -179,19 +134,6 @@ export function findHighestScoringRouteWithElephant(
                   nextAgentTwoValve.id
                 )!.length + 1
               : agentTwoTimeToValve;
-
-            // const isNowhereForAgentOneToGo =
-            //   isAgentOneAtDestination &&
-            //   nextAgentOneValve.id == agentOneDestinationValve.id;
-            // if (isNowhereForAgentOneToGo) {
-            //   newAgentOneTimeToValve = Number.MAX_SAFE_INTEGER;
-            // }
-            // const isNowhereForAgentTwoToGo =
-            //   isAgentTwoAtDestination &&
-            //   nextAgentTwoValve.id == agentTwoDestinationValve.id;
-            // if (isNowhereForAgentTwoToGo) {
-            //   newAgentTwoTimeToValve = Number.MAX_SAFE_INTEGER;
-            // }
 
             const canGetToNextAgentOneValveInTime =
               timeRemaining - newAgentOneTimeToValve > 1;
@@ -216,25 +158,13 @@ export function findHighestScoringRouteWithElephant(
                 currentPressureRelieved +
                 newPressureReliefFlowRate * minTimeToNextValve;
               let newOpenValves = [...openValves];
-              // const newOpenOrder = [...openOrder];
+
               if (isAgentOneAtDestination) {
                 newOpenValves.push(nextAgentOneValve);
               }
               if (isAgentTwoAtDestination) {
                 newOpenValves.push(nextAgentTwoValve);
               }
-
-              // const newStoryLog = new Map<number, string[]>(storyLog.entries());
-              // const logForMinute = [...(newStoryLog.get(currentMinute) ?? [])];
-
-              // logForMinute.push(
-              //   `Agent 1 heading to ${nextAgentOneValve.id}, open in ${newAgentOneTimeToValve} minutes.`
-              // );
-              // logForMinute.push(
-              //   `Agent 2 heading to ${nextAgentTwoValve.id}, open in ${newAgentTwoTimeToValve} minutes.`
-              // );
-
-              // newStoryLog.set(currentMinute, logForMinute);
 
               dfs(
                 newTimeRemaining,
@@ -245,8 +175,6 @@ export function findHighestScoringRouteWithElephant(
                 newCurrentPressureRelieved,
                 newPressureReliefFlowRate,
                 newOpenValves
-                // storyLog,
-                // newOpenOrder
               );
             }
           }
@@ -276,46 +204,8 @@ export function findHighestScoringRouteWithElephant(
     const finalPressureRelieved =
       currentPressureRelieved + timeRemaining * newPressureReliefFlowRate;
 
-    // const openOrderText = openOrder
-    //   .filter((valveID) => valveID !== "AA")
-    //   .join(", ");
-    // if (openOrderText == "DD, JJ, BB, HH, CC, EE") {
-    //   debugger;
-    // }
-
     if (finalPressureRelieved > bestScore) {
       bestScore = finalPressureRelieved;
-
-      // const currentMinute = 26 - timeRemaining + 1;
-      // const logForMinute = [...(storyLog.get(currentMinute) ?? [])];
-      // logForMinute.push(``, `(At this point, all valves are open.)`);
-      // logForMinute.push(`Valve open order: ${openOrderText}`);
-
-      // logForMinute.push(
-      //   `Final pressure: ${finalPressureRelieved}, timeRemaining: ${timeRemaining}`
-      // );
-      // storyLog.set(currentMinute, logForMinute);
-
-      // bestStory = storyLog;
     }
   }
-}
-
-function printStory(
-  bestStory: Map<number, string[]>,
-  timeRemaining: number,
-  bestScore: number
-) {
-  const storyLines: string[] = [];
-
-  const timesWithLogEntries = bestStory.keys();
-  for (const minute of timesWithLogEntries) {
-    storyLines.push("", `== Minute ${minute} ==`);
-    const logForMinute = bestStory.get(minute) ?? [];
-    storyLines.push(...logForMinute, "");
-  }
-  storyLines.push(
-    `With the elephant helping, after ${timeRemaining} minutes, the best you could do would release a total of ${bestScore} pressure.`
-  );
-  console.log(storyLines.join("\n"));
 }

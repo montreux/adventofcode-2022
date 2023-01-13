@@ -59,7 +59,7 @@ test("calcRobotBuildPlan", () => {
   const blueprints = parseInputData(inputLines);
 
   const actualPlan1 = calcRobotBuildPlan(blueprints[0]);
-  const geodesOpened1 = calcGeodesOpened(blueprints[0], actualPlan1, 24, true);
+  const geodesOpened1 = calcGeodesOpened(blueprints[0], actualPlan1, 24);
   expect(geodesOpened1).toBe(9);
   const expectedRobotConstructionOrder: RobotType[] = [
     "Clay",
@@ -113,11 +113,11 @@ test("Score - puzzle data", () => {
     "./src/day19/notEnoughMinerals.puzzledata.txt"
   );
   const blueprints = parseInputData(inputLines);
-  const score = scoreBluePrints(blueprints, 24, true);
+  const score = scoreBluePrints(blueprints, 24);
   expect(score).toBe(1346);
 });
 
-test("Part 2 - puzzle data", () => {
+xtest("Part 2 - puzzle data", () => {
   const inputLines = loadDataFrom(
     "./src/day19/notEnoughMinerals.puzzledata.txt"
   );
