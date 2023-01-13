@@ -32,6 +32,7 @@ export function findNumRoundsToSpaceOut(
       roundCount % 4
     ] as SearchOrder;
     roundCount += 1;
+    // for part 2 performRound takes 16s and areElfLocationsEqual 1.7s
     nextElfLocations = performRound(previousElfLocations, searchOrder);
     if (areElfLocationsEqual(nextElfLocations, previousElfLocations)) {
       return roundCount;
