@@ -1,444 +1,321 @@
-import { assert } from "console";
-import { Valve, valveArrayToMap } from "./Valve";
+// Track opened scoring valves
+// Start at AA
+// DFS: For all unopened scoring valves, trying going to each one (recurse).
+// Once we run out of time, or no more valid moves, update the best score if higher
 
-export enum Action {
-  MOVE,
-  OPEN,
-  NOOP,
-}
-export type CaveAction = [Action, string | boolean];
+import { ValveAsNode } from "./ValvesToNodesAndEdges";
 
-export function calcRouteValue(
-  valves: Map<string, Valve>,
-  currentValveId: string,
-  actions: CaveAction[]
-): number {
-  const openValves: Valve[] = [];
-  let cumulativeValue = 0;
-  let currentValve = valves.get(currentValveId)!;
-  for (
-    let minutesLeft = 30, actionIndex = 0;
-    minutesLeft > 0;
-    minutesLeft--, actionIndex++
+export function findHighestScoringRoute(allValves: Map<string, ValveAsNode>) {
+  const timeRemaining = 30;
+  const startValve = allValves.get("AA")!;
+  let bestScore = 0;
+
+  dfs(timeRemaining, startValve, 0, 0, []);
+
+  return bestScore;
+
+  function dfs(
+    timeRemaining: number,
+    currentValve: ValveAsNode,
+    currentPressureRelieved: number,
+    pressureReliefFlowRate: number,
+    openValves: ValveAsNode[]
   ) {
-    // Score open valves
-    for (const valve of openValves) {
-      cumulativeValue += valve.flowRate;
-    }
-
-    // Perform action
-    const currentAction = actions[actionIndex];
-    if (currentAction[0] == Action.MOVE) {
-      const nextValveId = currentAction[1] as string;
-      assert(
-        currentValve.connectedValveIds.includes(nextValveId),
-        "Trying to move to unconnected valve."
-      );
-      currentValve = valves.get(nextValveId)!;
-    } else if (currentAction[0] == Action.OPEN) {
-      const shouldOpenCurrentValue = currentAction[1];
-      if (shouldOpenCurrentValue) {
-        openValves.push(currentValve);
+    const valvesThatCouldBeOpened = [...allValves.values()].filter(
+      (valve) => !openValves.includes(valve) && valve.flowRate > 0
+    );
+    for (const nextValve of valvesThatCouldBeOpened) {
+      const timeToReachAndOpenNextValve =
+        currentValve.shortestPaths.get(nextValve.id)!.length + 1;
+      if (timeRemaining - timeToReachAndOpenNextValve > 1) {
+        const newTimeRemaining = timeRemaining - timeToReachAndOpenNextValve;
+        const newPressureRelieved =
+          currentPressureRelieved +
+          timeToReachAndOpenNextValve * pressureReliefFlowRate;
+        const newPressureReliefFlowRate =
+          pressureReliefFlowRate + nextValve.flowRate;
+        const newOpenValves = [...openValves, nextValve];
+        dfs(
+          newTimeRemaining,
+          nextValve,
+          newPressureRelieved,
+          newPressureReliefFlowRate,
+          newOpenValves
+        );
       }
     }
+
+    const finalPressureRelieved =
+      currentPressureRelieved + timeRemaining * pressureReliefFlowRate;
+    if (finalPressureRelieved > bestScore) {
+      bestScore = finalPressureRelieved;
+    }
   }
-  return cumulativeValue;
 }
 
-export function findValvesWorthOpening(valves: Map<string, Valve>) {
-  return valveArrayToMap(
-    [...valves.values()].filter((valve) => valve.flowRate > 0)
-  );
-}
-
-export function findAllScoringRoutes(
-  valves: Map<string, Valve>,
-  startingValveId: string,
-  timeAvailable: number
-): string[][] {
-  const valvesIdsWorthOpening = [...valves.values()]
-    .filter((valve) => valve.flowRate > 0)
-    .map((valve) => valve.id);
-  return findScoringRoutes(
-    valves,
-    startingValveId,
-    valvesIdsWorthOpening,
-    timeAvailable,
-    [startingValveId]
-  );
-}
-
-export function findScoringRoutes(
-  valves: Map<string, Valve>,
-  startingValveId: string,
-  searchSet: string[],
-  timeAvailable: number,
-  currentRoute: string[]
-): string[][] {
-  const possibleNextValves = reachableValves(
-    valves,
-    startingValveId,
-    searchSet,
-    timeAvailable
-  );
-
-  if (possibleNextValves.length === 0) {
-    return [currentRoute];
-  }
-
-  const routes: string[][] = [];
-  for (const nextValveId of possibleNextValves) {
-    const costToReach = plotRoute(valves, startingValveId, nextValveId).length;
-    const newSearchSet = searchSet.filter((valveId) => valveId !== nextValveId);
-    const availableRoutes = findScoringRoutes(
-      valves,
-      nextValveId,
-      newSearchSet,
-      timeAvailable - costToReach,
-      [...currentRoute, nextValveId]
-    );
-    routes.push(...availableRoutes);
-  }
-
-  return routes;
-}
-
-export function findBestRoute(
-  valves: Map<string, Valve>,
-  startingValveId: string,
-  timeAvailable: number
-): [string[], number] {
-  const valvesIdsWorthOpening = [...valves.values()]
-    .filter((valve) => valve.flowRate > 0)
-    .map((valve) => valve.id);
-
-  const bestRoute = bestSubRoute(
-    valves,
-    startingValveId,
-    valvesIdsWorthOpening,
-    timeAvailable
-  );
-
-  const testNodeId1 = "HH:CC,EE";
-  const routeCache1 = bestSubRoutes.get(testNodeId1);
-  const testNodeId2 = "CC:EE,HH";
-  const routeCache2 = bestSubRoutes.get(testNodeId2);
-
-  // Reset cache
-  bestSubRoutes.clear();
-
-  return bestRoute;
-}
-
-type ValveValue = {
-  costToReach: number;
-  flowRate: number;
+type ValveOpeningState = {
+  timeRemaining: number;
+  agentOneCurrentValve: ValveAsNode;
+  agentOneTimeToValve: number;
+  agentTwoCurrentValve: ValveAsNode;
+  agentTwoTimeToValve: number;
+  currentPressureRelieved: number;
+  pressureReliefFlowRate: number;
+  openValves: ValveAsNode[];
 };
 
-const bestSubRoutes = new Map<string, string[]>();
-const subRouteValues = new Map<string, ValveValue[]>();
+export function findHighestScoringRouteWithElephant(
+  allValves: Map<string, ValveAsNode>
+) {
+  const timeRemaining = 26;
+  const startValve = allValves.get("AA")!;
+  let bestScore = 0;
+  // let bestStory = new Map<number, string[]>();
 
-function calcValueOfRoute(
-  valves: Map<string, Valve>,
-  valveIds: string[],
-  timeAvailable: number
-): number {
-  let totalValue = 0;
-  let timeFlowRateApplied = timeAvailable;
-  for (let index = 0; index < valveIds.length - 1; index++) {
-    const valve = valves.get(valveIds[index])!;
-    totalValue += valve.flowRate * timeFlowRateApplied;
-    const costToReachNext = plotRoute(
-      valves,
-      valveIds[index],
-      valveIds[index + 1]
-    ).length;
-    timeFlowRateApplied -= costToReachNext;
-  }
-  return totalValue;
-}
+  dfs(timeRemaining, startValve, 0, startValve, 0, 0, 0, []);
 
-export function bestSubRoute(
-  valves: Map<string, Valve>,
-  startingValveId: string,
-  searchSet: string[],
-  timeAvailable: number
-): [string[], number] {
-  // Early exit if previously calculated
-  const nodeId = `${startingValveId}:${[...searchSet].sort().join()}`;
-  if (bestSubRoutes.has(nodeId)) {
-    const cachedRoute = bestSubRoutes.get(nodeId)!;
-    const routeValue = calcValueOfRoute(valves, cachedRoute, timeAvailable);
-    return [cachedRoute, routeValue];
-  }
+  // printStory(bestStory, timeRemaining, bestScore);
 
-  const possibleNextValves = reachableValves(
-    valves,
-    startingValveId,
-    searchSet,
-    timeAvailable
-  );
+  return bestScore;
 
-  if (possibleNextValves.length === 0) {
-    // Can't reach any other valves in the available time
-    return [[startingValveId], 0];
-  }
+  function dfs(
+    timeRemaining: number,
+    agentOneDestinationValve: ValveAsNode,
+    agentOneTimeToValve: number,
+    agentTwoDestinationValve: ValveAsNode,
+    agentTwoTimeToValve: number,
+    currentPressureRelieved: number,
+    pressureReliefFlowRate: number,
+    openValves: ValveAsNode[]
+    // storyLog: Map<number, string[]>,
+    // openOrder: string[]
+  ) {
+    const isAgentOneAtDestination = agentOneTimeToValve == 0;
+    const isAgentTwoAtDestination = agentTwoTimeToValve == 0;
+    let newPressureReliefFlowRate = pressureReliefFlowRate;
+    if (isAgentOneAtDestination || isAgentTwoAtDestination) {
+      newPressureReliefFlowRate += isAgentOneAtDestination
+        ? agentOneDestinationValve.flowRate
+        : 0;
+      newPressureReliefFlowRate += isAgentTwoAtDestination
+        ? agentTwoDestinationValve.flowRate
+        : 0;
 
-  if (possibleNextValves.length === 1) {
-    const nextValveId = possibleNextValves[0];
-    const routeValue = calcValueOfRoute(
-      valves,
-      [startingValveId, nextValveId],
-      timeAvailable
-    );
+      // if (isAgentOneAtDestination) {
+      //   openOrder.push(agentOneDestinationValve.id);
+      // }
+      // if (isAgentTwoAtDestination) {
+      //   openOrder.push(agentTwoDestinationValve.id);
+      // }
 
-    bestSubRoutes.set(nodeId, [startingValveId, nextValveId]);
-    return [[startingValveId, nextValveId], routeValue];
-  }
+      //Log
+      // const currentMinute = 26 - timeRemaining + 1;
+      // const logForMinute = [...(storyLog.get(currentMinute) ?? [])];
+      // if (openValves.length == 0) {
+      //   logForMinute.push("No valves are open.");
+      // } else {
+      //   if (isAgentOneAtDestination) {
+      //     logForMinute.push(
+      //       `Agent 1 has opened ${agentOneDestinationValve.id}`
+      //     );
+      //   }
+      //   if (isAgentTwoAtDestination) {
+      //     logForMinute.push(
+      //       `Agent 2 has opened ${agentTwoDestinationValve.id}`
+      //     );
+      //   }
+      //   logForMinute.push(
+      //     `Valves ${openValves
+      //       .filter(
+      //         (valve) =>
+      //           !(
+      //             valve == agentOneDestinationValve && agentOneTimeToValve > 0
+      //           ) &&
+      //           !(valve == agentTwoDestinationValve && agentTwoTimeToValve > 0)
+      //       )
+      //       .map((valve) => valve.id)
+      //       .sort()
+      //       .join(
+      //         ", "
+      //       )} are open, releasing ${newPressureReliefFlowRate} pressure.`
+      //   );
+      //   logForMinute.push(
+      //     `${currentPressureRelieved} pressure currently relieved`
+      //   );
+      // }
+      // storyLog.set(currentMinute, logForMinute);
 
-  let bestRoute: string[] = [];
-  let bestRouteScore: number = -1;
-  for (const nextValveId of possibleNextValves) {
-    const costToReach = plotRoute(valves, startingValveId, nextValveId).length;
-    const newSearchSet = searchSet.filter((valveId) => valveId !== nextValveId);
-    const [subRoute, score] = bestSubRoute(
-      valves,
-      nextValveId,
-      newSearchSet,
-      timeAvailable - costToReach
-    );
-
-    if (score > bestRouteScore) {
-      bestRouteScore = score;
-      bestRoute = subRoute;
-    }
-  }
-
-  const routeFromHere = [startingValveId, ...bestRoute];
-  const valueFromHere = calcValueOfRoute(valves, routeFromHere, timeAvailable);
-
-  bestSubRoutes.set(nodeId, routeFromHere);
-
-  return [routeFromHere, valueFromHere];
-}
-
-export function calcScoringRouteValue(
-  valves: Map<string, Valve>,
-  scoringRoute: string[]
-): number {
-  const allActions: CaveAction[] = [];
-  for (let index = 0; index < scoringRoute.length - 1; index++) {
-    const fromValveId = scoringRoute[index];
-    const toValveId = scoringRoute[index + 1];
-    const actions = generateActionsToOpenValve(valves, fromValveId, toValveId);
-    allActions.push(...actions);
-  }
-  const numNoopsToAdd = 30 - allActions.length;
-  for (let index = 0; index < numNoopsToAdd; index++) {
-    allActions.push([Action.NOOP, ""]);
-  }
-  const score = calcRouteValue(valves, scoringRoute[0], allActions);
-  return score;
-}
-
-export function reachableValves(
-  valves: Map<string, Valve>,
-  currentValveId: string,
-  availableValves: string[],
-  timeAvailable: number
-): string[] {
-  return availableValves.filter(
-    (valveId) =>
-      plotRoute(valves, currentValveId, valveId).length < timeAvailable - 1
-  );
-}
-
-export function bestActions(
-  valves: Map<string, Valve>,
-  startingValveId: string,
-  movesLeft: number
-): CaveAction[] {
-  const actions: CaveAction[] = [];
-  const openValves: string[] = [];
-  let currentValveId = startingValveId;
-  while (movesLeft - actions.length > 0) {
-    const nextValveToOpen = bestNextValveToOpen(
-      valves,
-      openValves,
-      currentValveId,
-      movesLeft - actions.length
-    );
-    const haveValvesWorthOpening = nextValveToOpen.length > 0;
-    if (haveValvesWorthOpening) {
-      const newActions = generateActionsToOpenValve(
-        valves,
-        currentValveId,
-        nextValveToOpen
+      const valvesThatCouldBeOpened = [...allValves.values()].filter(
+        (valve) => !openValves.includes(valve) && valve.flowRate > 0
       );
-      openValves.push(nextValveToOpen);
-      actions.push(...newActions);
-    } else {
-      // No Op the rest of actions
-      for (let index = 0; index < movesLeft - actions.length; index++) {
-        actions.push([Action.NOOP, ""]);
-      }
-    }
-  }
 
-  return actions;
-}
+      if (valvesThatCouldBeOpened.length > 0) {
+        const possibleNextAgentOneValves = isAgentOneAtDestination
+          ? [...valvesThatCouldBeOpened]
+          : [agentOneDestinationValve];
+        const possibleNextAgentTwoValves = isAgentTwoAtDestination
+          ? [...valvesThatCouldBeOpened]
+          : [agentTwoDestinationValve];
 
-export function bestNextValveToOpen(
-  valves: Map<string, Valve>,
-  openValves: string[],
-  currentValveId: string,
-  movesLeft: number
-): string {
-  const valvesThatCanBeOpened = [...valves.values()].filter(
-    (valve) => !openValves.includes(valve.id)
-  );
-  const routesToValves = valvesThatCanBeOpened.map((valve) =>
-    plotRoute(valves, currentValveId, valve.id)
-  );
-  const routesReachableInTime = routesToValves.filter(
-    (route) => route.length < movesLeft - 2
-  );
-  const mapOfRoutes: Map<string, string[]> = routesReachableInTime.reduce<
-    Map<string, string[]>
-  >(
-    (map, route) => map.set(route[route.length - 1], route),
-    new Map<string, string[]>()
-  );
+        for (const nextAgentOneValve of possibleNextAgentOneValves) {
+          for (const nextAgentTwoValve of possibleNextAgentTwoValves) {
+            if (nextAgentTwoValve == nextAgentOneValve) {
+              continue;
+            }
+            // const isAtJjDdDecisionPoint =
+            //   currentMinute == 1 &&
+            //   nextAgentOneValve.id == "JJ" &&
+            //   nextAgentTwoValve.id == "DD";
+            // if (isAtJjDdDecisionPoint) {
+            //   debugger;
+            // }
+            let newAgentOneTimeToValve = isAgentOneAtDestination
+              ? agentOneDestinationValve.shortestPaths.get(
+                  nextAgentOneValve.id
+                )!.length + 1
+              : agentOneTimeToValve;
+            let newAgentTwoTimeToValve = isAgentTwoAtDestination
+              ? agentTwoDestinationValve.shortestPaths.get(
+                  nextAgentTwoValve.id
+                )!.length + 1
+              : agentTwoTimeToValve;
 
-  let bestFutureValue = Number.MIN_SAFE_INTEGER;
-  let bestValveIdToOpen = "";
-  for (const valveId of mapOfRoutes.keys()) {
-    const routeToValve = mapOfRoutes.get(valveId)!;
-    const timeLeftWhenReachedAndOpened = movesLeft - routeToValve.length;
-    const futureValue =
-      timeLeftWhenReachedAndOpened * valves.get(valveId)!.flowRate;
-    if (futureValue > bestFutureValue) {
-      bestFutureValue = futureValue;
-      bestValveIdToOpen = valveId;
-    }
-  }
+            // const isNowhereForAgentOneToGo =
+            //   isAgentOneAtDestination &&
+            //   nextAgentOneValve.id == agentOneDestinationValve.id;
+            // if (isNowhereForAgentOneToGo) {
+            //   newAgentOneTimeToValve = Number.MAX_SAFE_INTEGER;
+            // }
+            // const isNowhereForAgentTwoToGo =
+            //   isAgentTwoAtDestination &&
+            //   nextAgentTwoValve.id == agentTwoDestinationValve.id;
+            // if (isNowhereForAgentTwoToGo) {
+            //   newAgentTwoTimeToValve = Number.MAX_SAFE_INTEGER;
+            // }
 
-  return bestValveIdToOpen;
-}
+            const canGetToNextAgentOneValveInTime =
+              timeRemaining - newAgentOneTimeToValve > 1;
+            const canGetToNextAgentTwoValveInTime =
+              timeRemaining - newAgentTwoTimeToValve > 1;
 
-export function generateActionsToOpenValve(
-  valves: Map<string, Valve>,
-  currentValveId: string,
-  valveIdToOpen: string
-): CaveAction[] {
-  const route = plotRoute(valves, currentValveId, valveIdToOpen);
-  const actions: CaveAction[] = route.map((valveId) => [Action.MOVE, valveId]);
-  actions.shift();
-  actions.push([Action.OPEN, true]);
+            if (
+              canGetToNextAgentOneValveInTime ||
+              canGetToNextAgentTwoValveInTime
+            ) {
+              // Fast forward
+              const minTimeToNextValve = Math.min(
+                newAgentOneTimeToValve,
+                newAgentTwoTimeToValve
+              );
+              const newTimeRemaining = timeRemaining - minTimeToNextValve;
+              const nextAgentOneTimeToValve =
+                newAgentOneTimeToValve - minTimeToNextValve;
+              const nextAgentTwoTimeToValve =
+                newAgentTwoTimeToValve - minTimeToNextValve;
+              const newCurrentPressureRelieved =
+                currentPressureRelieved +
+                newPressureReliefFlowRate * minTimeToNextValve;
+              let newOpenValves = [...openValves];
+              // const newOpenOrder = [...openOrder];
+              if (isAgentOneAtDestination) {
+                newOpenValves.push(nextAgentOneValve);
+              }
+              if (isAgentTwoAtDestination) {
+                newOpenValves.push(nextAgentTwoValve);
+              }
 
-  return actions;
-}
+              // const newStoryLog = new Map<number, string[]>(storyLog.entries());
+              // const logForMinute = [...(newStoryLog.get(currentMinute) ?? [])];
 
-export function plotRoute(
-  valves: Map<string, Valve>,
-  fromValveId: string,
-  toValveId: string
-): string[] {
-  // 1. Mark all nodes unvisited. Create a set of all the unvisited nodes called the unvisited set.
-  const allValveIds = [...valves.values()].map((valve) => valve.id);
-  const unvisitedSet = new Set<string>(allValveIds);
+              // logForMinute.push(
+              //   `Agent 1 heading to ${nextAgentOneValve.id}, open in ${newAgentOneTimeToValve} minutes.`
+              // );
+              // logForMinute.push(
+              //   `Agent 2 heading to ${nextAgentTwoValve.id}, open in ${newAgentTwoTimeToValve} minutes.`
+              // );
 
-  // 2. Assign to every node a tentative distance value: set it to zero for our initial node and to infinity for all other nodes. During the run of the algorithm, the tentative distance of a node v is the length of the shortest path discovered so far between the node v and the starting node. Since initially no path is known to any other vertex than the source itself (which is a path of length zero), all other tentative distances are initially set to infinity. Set the initial node as current.
-  const tentativeDistances: Map<string, number> = [...valves.values()].reduce<
-    Map<string, number>
-  >(
-    (map, valve) => map.set(valve.id, Number.MAX_SAFE_INTEGER),
-    new Map<string, number>()
-  );
-  tentativeDistances.set(fromValveId, 0);
+              // newStoryLog.set(currentMinute, logForMinute);
 
-  let shouldContinue = false;
-  let currentValveId = fromValveId;
-
-  do {
-    // 3. For the current node, consider all of its unvisited neighbors and calculate their tentative distances through the current node. Compare the newly calculated tentative distance to the one currently assigned to the neighbor and assign it the smaller one. For example, if the current node A is marked with a distance of 6, and the edge connecting it with a neighbor B has length 2, then the distance to B through A will be 6 + 2 = 8. If B was previously marked with a distance greater than 8 then change it to 8. Otherwise, the current value will be kept.
-
-    // Filter to be in unvisited set
-    const connectedValveIds = valves.get(currentValveId)!.connectedValveIds;
-    const unvisitedNodesToInspect = connectedValveIds.filter((valveId) =>
-      unvisitedSet.has(valveId)
-    );
-
-    // Calculate tentative distance for each node as current+1
-    // Set tentative distances of nodes to the min of calculated and value and their curent value
-    const currentNodeTentativeDistance =
-      tentativeDistances.get(currentValveId)!;
-    for (const valveId of unvisitedNodesToInspect) {
-      const tentativeDistanceOfNode = tentativeDistances.get(valveId)!;
-      const newTentativeDistanceOfNode = Math.min(
-        tentativeDistanceOfNode,
-        currentNodeTentativeDistance + 1
-      );
-      tentativeDistances.set(valveId, newTentativeDistanceOfNode);
-    }
-
-    // 4. When we are done considering all of the unvisited neighbors of the current node, mark the current node as visited and remove it from the unvisited set. A visited node will never be checked again (this is valid and optimal in connection with the behavior in step 6.: that the next nodes to visit will always be in the order of 'smallest distance from initial node first' so any visits after would have a greater distance).
-    unvisitedSet.delete(currentValveId);
-
-    // 5. If the destination node has been marked visited (when planning a route between two specific nodes) or if the smallest tentative distance among the nodes in the unvisited set is infinity (when planning a complete traversal; occurs when there is no connection between the initial node and remaining unvisited nodes), then stop. The algorithm has finished.
-    const haveVisitedEveryNode = unvisitedSet.size === 0;
-    let nextValveId = "";
-    let tentativeDistanceOfNextNode = Number.MAX_SAFE_INTEGER;
-    if (!haveVisitedEveryNode) {
-      const allUnvisitedNodes = Array.from(unvisitedSet.values());
-
-      nextValveId =
-        allUnvisitedNodes.length === 1
-          ? allUnvisitedNodes[0]
-          : allUnvisitedNodes.sort(
-              (a, b) => tentativeDistances.get(a)! - tentativeDistances.get(b)!
-            )[0];
-      tentativeDistanceOfNextNode = tentativeDistances.get(nextValveId)!;
-    }
-    const haveNoMoreReachableNodes =
-      tentativeDistanceOfNextNode === Number.MAX_SAFE_INTEGER;
-
-    // 6. Otherwise, select the unvisited node that is marked with the smallest tentative distance, set it as the new current node, and go back to step 3.
-    shouldContinue = !haveVisitedEveryNode && !haveNoMoreReachableNodes;
-    if (shouldContinue) {
-      currentValveId = nextValveId;
-    }
-
-    // When planning a route, it is actually not necessary to wait until the destination node is "visited" as above: the algorithm can stop once the destination node has the smallest tentative distance among all "unvisited" nodes (and thus could be selected as the next "current").
-    const isNextNodeTheDestination = nextValveId === toValveId;
-    if (isNextNodeTheDestination) {
-      // Still need to write the distance to the end node
-      tentativeDistances.set(nextValveId, currentNodeTentativeDistance + 1);
-    }
-    shouldContinue &&= !isNextNodeTheDestination;
-  } while (shouldContinue);
-
-  // Now find our route by walking back from our destination
-  const shortestRoute: string[] = [toValveId];
-  currentValveId = toValveId;
-  do {
-    // Find the reachable adjacent node with a lower tentative distance
-    const valve = valves.get(currentValveId)!;
-    let shortestDistance = Number.MAX_SAFE_INTEGER;
-    let nextValveId = "";
-    for (const valveId of valve.connectedValveIds) {
-      const distance = tentativeDistances.get(valveId)!;
-      if (distance < shortestDistance) {
-        shortestDistance = distance;
-        nextValveId = valveId;
+              dfs(
+                newTimeRemaining,
+                nextAgentOneValve,
+                nextAgentOneTimeToValve,
+                nextAgentTwoValve,
+                nextAgentTwoTimeToValve,
+                newCurrentPressureRelieved,
+                newPressureReliefFlowRate,
+                newOpenValves
+                // storyLog,
+                // newOpenOrder
+              );
+            }
+          }
+        }
       }
     }
 
-    currentValveId = nextValveId;
+    // One valve may remain to be opened
+    if (!isAgentOneAtDestination) {
+      if (timeRemaining - agentOneTimeToValve > 1) {
+        currentPressureRelieved +=
+          agentOneTimeToValve * newPressureReliefFlowRate;
+        newPressureReliefFlowRate += agentOneDestinationValve.flowRate;
+        timeRemaining -= agentOneTimeToValve;
+      }
+    }
+    if (!isAgentTwoAtDestination) {
+      if (timeRemaining - agentTwoTimeToValve > 1) {
+        currentPressureRelieved +=
+          agentTwoTimeToValve * newPressureReliefFlowRate;
+        newPressureReliefFlowRate += agentTwoDestinationValve.flowRate;
+        timeRemaining -= agentTwoTimeToValve;
+      }
+    }
 
-    // Insert node at the start of the route
-    shortestRoute.unshift(currentValveId);
-  } while (currentValveId !== fromValveId);
+    // No more valves to open, calculate the final pressure
+    const finalPressureRelieved =
+      currentPressureRelieved + timeRemaining * newPressureReliefFlowRate;
 
-  return shortestRoute;
+    // const openOrderText = openOrder
+    //   .filter((valveID) => valveID !== "AA")
+    //   .join(", ");
+    // if (openOrderText == "DD, JJ, BB, HH, CC, EE") {
+    //   debugger;
+    // }
+
+    if (finalPressureRelieved > bestScore) {
+      bestScore = finalPressureRelieved;
+
+      // const currentMinute = 26 - timeRemaining + 1;
+      // const logForMinute = [...(storyLog.get(currentMinute) ?? [])];
+      // logForMinute.push(``, `(At this point, all valves are open.)`);
+      // logForMinute.push(`Valve open order: ${openOrderText}`);
+
+      // logForMinute.push(
+      //   `Final pressure: ${finalPressureRelieved}, timeRemaining: ${timeRemaining}`
+      // );
+      // storyLog.set(currentMinute, logForMinute);
+
+      // bestStory = storyLog;
+    }
+  }
+}
+
+function printStory(
+  bestStory: Map<number, string[]>,
+  timeRemaining: number,
+  bestScore: number
+) {
+  const storyLines: string[] = [];
+
+  const timesWithLogEntries = bestStory.keys();
+  for (const minute of timesWithLogEntries) {
+    storyLines.push("", `== Minute ${minute} ==`);
+    const logForMinute = bestStory.get(minute) ?? [];
+    storyLines.push(...logForMinute, "");
+  }
+  storyLines.push(
+    `With the elephant helping, after ${timeRemaining} minutes, the best you could do would release a total of ${bestScore} pressure.`
+  );
+  console.log(storyLines.join("\n"));
 }
